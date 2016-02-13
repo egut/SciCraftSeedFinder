@@ -39,8 +39,8 @@ public class QuadHutMonFinder {
 		int zrand = coords.getZ();
 		xpos[TOPLEFT] = x  * 32 + xrand;
 		zpos[TOPLEFT] = z  * 32 + zrand;
-		xmon = xrand;
-		zmon = zrand;
+		xmon = x;
+		zmon = z;
 		
 		return xrand >= 22 && zrand >= 22;
 	}
@@ -177,7 +177,7 @@ public class QuadHutMonFinder {
 		while (startSeed < -281474976710656L || startSeed > 281470000000000L ) {
 			startSeed = rnd.nextLong(); //Long.parseLong(args[0]);	
 		} 
-		//debug startSeed = -96928167637521L;
+		//startSeed = -266488111251720L;
 		System.out.println(startSeed);
 		long endSeed = 281474976710656L; //higher than 2^48 will be useless
 		int radius = 4;
