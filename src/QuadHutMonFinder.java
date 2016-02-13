@@ -58,10 +58,10 @@ public class QuadHutMonFinder {
 		} else if ( coords.getX() >= monumnetLimitLo && coords.getZ() >= monumnetLimitLo ) {
 			int mxpos = x  * 32 + coords.getX();
 			int mzpos = z  * 32 + coords.getZ();
-			System.out.print("debug" + mxpos  + "," + mzpos + "," + coords.getX() + "," +coords.getZ() + "," +x+ ", " +z+ ", ");
+			//System.out.print("debug" + mxpos  + "," + mzpos + "," + coords.getX() + "," +coords.getZ() + "," +x+ ", " +z+ ", ");
 			System.out.print(" Monument possible outside: @(" + coords.getX() + "," + coords.getZ() + ")");
 			if (monument.structureWillSpawn(xRegion, zRegion, mxpos, mzpos, generate)) {
-				System.out.print(" found monument: (" + (mxpos * 16) + "," + (mzpos * 16) +")");
+				System.out.print(" found monument: (" + (mxpos * 16) + "," + (mzpos * 16) +") ");
 			}
 		} else {
 			System.out.print(" Monument skip: @(" + coords.getX() + "," + coords.getZ() + ") < @(" + monumnetLimitLo + "," + monumnetLimitLo + ")");
@@ -161,7 +161,7 @@ public class QuadHutMonFinder {
 			biomeGenerator generate = new biomeGenerator(seedFull, 2);
 			if(allSwamp(xpos, zpos, generate)){
 				//Quad hut calc.	
-				System.out.print("Seed: " + seedFull);
+				System.out.print("("+seed+") Seed: " + seedFull);
 				printQuadHut();
 				checkForMonumnetinBR(xmon, zmon, seed, generate);
 				System.out.println();
@@ -177,7 +177,7 @@ public class QuadHutMonFinder {
 		while (startSeed < -281474976710656L || startSeed > 281470000000000L ) {
 			startSeed = rnd.nextLong(); //Long.parseLong(args[0]);	
 		} 
-		startSeed = -264081475248387L;
+		//startSeed = -264081475248387L;
 		System.out.println(startSeed);
 		long endSeed = 281474976710656L; //higher than 2^48 will be useless
 		int radius = 4;
