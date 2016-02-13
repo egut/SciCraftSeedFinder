@@ -177,7 +177,7 @@ public class QuadHutMonFinder {
 		while (startSeed < -281474976710656L || startSeed > 281470000000000L ) {
 			startSeed = rnd.nextLong(); //Long.parseLong(args[0]);	
 		} 
-		startSeed = -96928167637521L;
+		//debug startSeed = -96928167637521L;
 		System.out.println(startSeed);
 		long endSeed = 281474976710656L; //higher than 2^48 will be useless
 		int radius = 4;
