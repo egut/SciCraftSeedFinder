@@ -21,7 +21,8 @@ public class HutandMonumentFinder {
 	public static structureMonument monument;
 	public static bitIterator bitIt;
 	public final static int monumnetLimit=22;
-	
+	public final static boolean debug=true;
+
 	public static boolean allSwamp(int[] x, int[] z, biomeGenerator generate)
 	{
 		for(int i = 0; i < 4; i++)
@@ -246,7 +247,8 @@ public class HutandMonumentFinder {
 		while (startSeed < -281474976710656L || startSeed > 281470000000000L ) {
 			startSeed = rnd.nextLong(); //Long.parseLong(args[0]);	
 		} 
-		System.out.println(startSeed);
+		if(debug) startSeed = 148372070833119L;
+		if(debug) System.out.println("Seed:" + startSeed);
 		long endSeed = 281474976710656L; //higher than 2^48 will be useless
 		int radius = 4;
 		long currentSeed;

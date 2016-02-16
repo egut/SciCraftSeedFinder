@@ -16,6 +16,7 @@ public class QuadHutMonFinder {
 	public static structureHut hut;
 	public static structureMonument monument;
 	public static bitIterator bitIt;
+	public final static boolean debug=false;
 	public final static int monumnetLimitLo=16;
 	public final static int monumnetLimitHi=24;
 
@@ -41,32 +42,35 @@ public class QuadHutMonFinder {
 		zpos[TOPLEFT] = z  * 32 + zrand;
 		xmon = x;
 		zmon = z;
-		
+		if(debug) System.out.println("Check hut in BR @(" + x +"," + z + ")");
 		return xrand >= 22 && zrand >= 22;
 	}
 
-	private static void checkForMonumnetinBR(int x, int z, long seed, biomeGenerator generate) {
+	private static String checkForMonumnetinBR(int x, int z, long seed, biomeGenerator generate) {
+
+		String ret = "";
+		if(debug) System.out.println("Check mon in BR @(" + x +"," + z + ")");
 		xzPair coords = monument.structurePosInRegion(x, z, seed);
+		int mxpos = x  * 32 + coords.getX();
+		int mzpos = z  * 32 + coords.getZ();
 		if ( coords.getX() >= monumnetLimitHi && coords.getZ() >= monumnetLimitHi ) {
-			int mxpos = x  * 32 + coords.getX();
-			int mzpos = z  * 32 + coords.getZ();
-			System.out.print(" Monument possible inside: @(" + coords.getX() + "," + coords.getZ() + ")");
-			System.out.print(" possible: (" + (mxpos * 16) + "," + (mzpos * 16) +")");
+			ret = " Monument possible inside: @(" + coords.getX() + "," + coords.getZ() + ")";
+			ret += " possible: (" + (mxpos * 16) + "," + (mzpos * 16) +")";
 			if (monument.structureWillSpawn(xRegion, zRegion, mxpos, mzpos, generate)) {
-				System.out.print(" found MONUMNET: (" + (mxpos * 16) + "," + (mzpos * 16) +")");
+				ret += " found MONUMNET: (" + (mxpos * 16) + "," + (mzpos * 16) +")";
 			}
 		} else if ( coords.getX() >= monumnetLimitLo && coords.getZ() >= monumnetLimitLo ) {
-			int mxpos = x  * 32 + coords.getX();
-			int mzpos = z  * 32 + coords.getZ();
+
 			//System.out.print("debug" + mxpos  + "," + mzpos + "," + coords.getX() + "," +coords.getZ() + "," +x+ ", " +z+ ", ");
-			System.out.print(" Monument possible outside: @(" + coords.getX() + "," + coords.getZ() + ")");
+			ret = " Monument possible outside: @(" + coords.getX() + "," + coords.getZ() + ")";
 			if (monument.structureWillSpawn(xRegion, zRegion, mxpos, mzpos, generate)) {
-				System.out.print(" found monument: (" + (mxpos * 16) + "," + (mzpos * 16) +") ");
+				ret += " found monument: (" + (mxpos * 16) + "," + (mzpos * 16) +") ";
 			}
 		} else {
-			System.out.print(" Monument skip: @(" + coords.getX() + "," + coords.getZ() + ") < @(" + monumnetLimitLo + "," + monumnetLimitLo + ")");
-			
+			ret = " Monument skip: @(" + coords.getX() + "," + coords.getZ() + ") < @(" + monumnetLimitLo + "," + monumnetLimitLo + ") [" + (mxpos * 16) + "," + (mzpos * 16) +"]";
 		}
+		return ret;
+
 	}
 
 	private static boolean checkForStructureBL(int x, int z, long seed) {
@@ -75,7 +79,7 @@ public class QuadHutMonFinder {
 		int zrand = coords.getZ();
 		xpos[TOPRIGHT] = x  * 32 + xrand;
 		zpos[TOPRIGHT] = z  * 32 + zrand;
-	
+		if(debug) System.out.println("Check hut in BL @(" + x +"," + z + ")");
 		return xrand <=1 && zrand >= 22;
 	}
 	
@@ -85,7 +89,7 @@ public class QuadHutMonFinder {
 		int zrand = coords.getZ();
 		xpos[BOTTOMLEFT] = x  * 32 + xrand;
 		zpos[BOTTOMLEFT] = z  * 32 + zrand;
-		
+		if(debug) System.out.println("Check hut in TR @(" + x +"," + z + ")");
 		return xrand >=22 && zrand <= 1;
 	}
 
@@ -95,7 +99,8 @@ public class QuadHutMonFinder {
 		int zrand = coords.getZ();
 		xpos[BOTTOMRIGHT] = x  * 32 + xrand;
 		zpos[BOTTOMRIGHT] = z  * 32 + zrand;
-		
+
+		if(debug) System.out.println("Check hut in TL @(" + x +"," + z + ")");
 		return xrand <=1 && zrand <= 1;
 	}
 	
@@ -154,17 +159,17 @@ public class QuadHutMonFinder {
 		long seedBit = seed & 281474976710655L;	//magic number
 		bitIt = new bitIterator(seedBit);
 		xzPair monCords = null;
-		
-		System.out.println("Right possible: " + seed);				
+		String mon_str;
+		if(debug) System.out.println("Right possible: " + seed);				
 		while(bitIt.hasNext()){
 			long seedFull = bitIt.next();
 			biomeGenerator generate = new biomeGenerator(seedFull, 2);
 			if(allSwamp(xpos, zpos, generate)){
 				//Quad hut calc.	
+				mon_str = checkForMonumnetinBR(xmon, zmon, seed, generate);
 				System.out.print("("+seed+") Seed: " + seedFull);
 				printQuadHut();
-				checkForMonumnetinBR(xmon, zmon, seed, generate);
-				System.out.println();
+				System.out.println(mon_str);
 			}
 
 		}
@@ -177,8 +182,8 @@ public class QuadHutMonFinder {
 		while (startSeed < -281474976710656L || startSeed > 281470000000000L ) {
 			startSeed = rnd.nextLong(); //Long.parseLong(args[0]);	
 		} 
-		//startSeed = -264081475248387L;
-		System.out.println(startSeed);
+		if(debug) startSeed = 147915050934441L;
+		System.out.println("Start seed:" + startSeed);
 		long endSeed = 281474976710656L; //higher than 2^48 will be useless
 		int radius = 4;
 		long currentSeed;
@@ -209,6 +214,7 @@ public class QuadHutMonFinder {
 								// this means that to be in a quad it would be in bottom right of the quad
 								
 								// check the 32x32 chunk area neighbors to the left and above
+								if(debug) System.out.println("Start in TL @(" + x +"," + z + ")");
 								if ( checkForStructureTR(x-1, z, currentSeed) && 
 									checkForStructureBR(x-1, z-1, currentSeed) &&
 									checkForStructureBL(x, z-1, currentSeed)) {	
@@ -223,6 +229,7 @@ public class QuadHutMonFinder {
 								// this means that to be in a quad it would be in top right of the quad
 								
 								// check the 32x32 chunk area neighbors to the left and below
+								if(debug) System.out.println("Start in BL @(" + x +"," + z + ")");
 								if ( checkForStructureTL(x, z+1, currentSeed) && 
 									checkForStructureTR(x-1, z+1, currentSeed) &&
 									checkForStructureBR(x-1, z, currentSeed)) {
@@ -238,6 +245,7 @@ public class QuadHutMonFinder {
 								// this means that to be in a quad it would be in bottom left of the quad
 								
 								// check the 32x32 chunk area neighbors to the right and above
+							    if(debug) System.out.println("Start in TR @(" + x +"," + z + ")");
 								if ( checkForStructureBR(x, z-1, currentSeed) && 
 									checkForStructureBL(x+1, z-1, currentSeed) && 
 									checkForStructureTL(x+1, z, currentSeed)) {
@@ -252,11 +260,14 @@ public class QuadHutMonFinder {
 								// this means that to be in a quad it would be in top left of the quad
 								
 								// check the 32x32 chunk area neighbors to the right and below
+								if(debug) System.out.println("Start in BR @(" + x +"," + z + ")");
 								if ( checkForStructureBL(x+1, z, currentSeed) && 
 									checkForStructureTL(x+1, z+1, currentSeed) && 
 									checkForStructureTR(x, z+1, currentSeed)) {
 										xpos[TOPLEFT] =  x  * 32 + xr;
 										zpos[TOPLEFT] =  z  * 32 + zr;
+										xmon = x;
+										zmon = z;
 										checkIfValid(currentSeed);									
 								}	
 							}
