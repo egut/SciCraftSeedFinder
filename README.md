@@ -19,7 +19,7 @@ There are also a small build script using ant. To choose what job you want to ru
 
     java -jar dist/seedfinder.jar > seeds.txt
 
-You can run as many copies as you have cores in your computer, more is point less.
+You can run as many copies as you have cores in your computer, more is pointless.
 
 
 
