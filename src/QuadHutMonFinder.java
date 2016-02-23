@@ -1,6 +1,11 @@
 
 
 import java.util.Random;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.stream.Stream;
 
 import com.scicraft.seedfinder.*;
 
@@ -176,106 +181,124 @@ public class QuadHutMonFinder {
 		
 	}
 	
-	
-	public static void main(String[] args) {
-		long startSeed = -281474976710658L; 
-		while (startSeed < -281474976710656L || startSeed > 281470000000000L ) {
-			startSeed = rnd.nextLong(); //Long.parseLong(args[0]);	
-		} 
-		if(debug) startSeed = 147915050934441L;
-		System.out.println("Start seed:" + startSeed);
-		long endSeed = 281474976710656L; //higher than 2^48 will be useless
-		int radius = 4;
-		long currentSeed;
+
+	public static void checkCoords(long currentSeed) {
 		int xr, zr;
-		long count = 0;
+		int radius = 4;
 		hut = new structureHut();
 		monument = new structureMonument();
-		for(currentSeed = startSeed; currentSeed <= endSeed; currentSeed++){			
-			count += 1;
-			for(int x=-radius; x<radius - 1; x+=2) {	
+		for(int x=-radius; x<radius - 1; x+=2) {	
+			
+			long xPart = hut.xPart(x);
+			
+			for(int z=-radius; z<radius - 1; z+=2) {
 				
-				long xPart = hut.xPart(x);
+				long zPart = hut.zPart(z);
+				xzPair coords = hut.structurePosInRegionFast(xPart, zPart, currentSeed, 1, 22);
 				
-				for(int z=-radius; z<radius - 1; z+=2) {
+				if(coords != null){
+					xr = coords.getX();
+					zr = coords.getZ();
 					
-					long zPart = hut.zPart(z);
-					xzPair coords = hut.structurePosInRegionFast(xPart, zPart, currentSeed, 1, 22);
 					
-					if(coords != null){
-						xr = coords.getX();
-						zr = coords.getZ();
+					if (xr <= 1) {
 						
-						
-						if (xr <= 1) {
+						if( zr <= 1 ) {
+							// candidate witch hut, is in the top left of the 32x32 chunk array
+							// this means that to be in a quad it would be in bottom right of the quad
 							
-							if( zr <= 1 ) {
-								// candidate witch hut, is in the top left of the 32x32 chunk array
-								// this means that to be in a quad it would be in bottom right of the quad
-								
-								// check the 32x32 chunk area neighbors to the left and above
-								if(debug) System.out.println("Start in TL @(" + x +"," + z + ")");
-								if ( checkForStructureTR(x-1, z, currentSeed) && 
-									checkForStructureBR(x-1, z-1, currentSeed) &&
-									checkForStructureBL(x, z-1, currentSeed)) {	
-										xpos[BOTTOMRIGHT] =  x * 32 + xr;
-										zpos[BOTTOMRIGHT] =  z * 32 + zr;
-										checkIfValid(currentSeed);			
-								}
-								
+							// check the 32x32 chunk area neighbors to the left and above
+							if(debug) System.out.println("Start in TL @(" + x +"," + z + ")");
+							if ( checkForStructureTR(x-1, z, currentSeed) && 
+								checkForStructureBR(x-1, z-1, currentSeed) &&
+								checkForStructureBL(x, z-1, currentSeed)) {	
+									xpos[BOTTOMRIGHT] =  x * 32 + xr;
+									zpos[BOTTOMRIGHT] =  z * 32 + zr;
+									checkIfValid(currentSeed);			
 							}
-							else if( zr >= 22 ){
-								// candidate witch hut, is in the bottom left of the 32x32 chunk array
-								// this means that to be in a quad it would be in top right of the quad
-								
-								// check the 32x32 chunk area neighbors to the left and below
-								if(debug) System.out.println("Start in BL @(" + x +"," + z + ")");
-								if ( checkForStructureTL(x, z+1, currentSeed) && 
-									checkForStructureTR(x-1, z+1, currentSeed) &&
-									checkForStructureBR(x-1, z, currentSeed)) {
-										xpos[TOPRIGHT] =  x  * 32 + xr;
-										zpos[TOPRIGHT] =  z  * 32 + zr;
-										checkIfValid(currentSeed);
-								}
+							
+						}
+						else if( zr >= 22 ){
+							// candidate witch hut, is in the bottom left of the 32x32 chunk array
+							// this means that to be in a quad it would be in top right of the quad
+							
+							// check the 32x32 chunk area neighbors to the left and below
+							if(debug) System.out.println("Start in BL @(" + x +"," + z + ")");
+							if ( checkForStructureTL(x, z+1, currentSeed) && 
+								checkForStructureTR(x-1, z+1, currentSeed) &&
+								checkForStructureBR(x-1, z, currentSeed)) {
+									xpos[TOPRIGHT] =  x  * 32 + xr;
+									zpos[TOPRIGHT] =  z  * 32 + zr;
+									checkIfValid(currentSeed);
 							}
-		
-						} else{							
-							if( zr <= 1 ) {
-								// candidate witch hut, is in the top right of the 32x32 chunk array
-								// this means that to be in a quad it would be in bottom left of the quad
-								
-								// check the 32x32 chunk area neighbors to the right and above
-							    if(debug) System.out.println("Start in TR @(" + x +"," + z + ")");
-								if ( checkForStructureBR(x, z-1, currentSeed) && 
-									checkForStructureBL(x+1, z-1, currentSeed) && 
-									checkForStructureTL(x+1, z, currentSeed)) {
-										xpos[BOTTOMLEFT] =  x  * 32 + xr;
-										zpos[BOTTOMLEFT] =  z  * 32 + zr;
-										checkIfValid(currentSeed);
+						}
+	
+					} else{							
+						if( zr <= 1 ) {
+							// candidate witch hut, is in the top right of the 32x32 chunk array
+							// this means that to be in a quad it would be in bottom left of the quad
+							
+							// check the 32x32 chunk area neighbors to the right and above
+						    if(debug) System.out.println("Start in TR @(" + x +"," + z + ")");
+							if ( checkForStructureBR(x, z-1, currentSeed) && 
+								checkForStructureBL(x+1, z-1, currentSeed) && 
+								checkForStructureTL(x+1, z, currentSeed)) {
+									xpos[BOTTOMLEFT] =  x  * 32 + xr;
+									zpos[BOTTOMLEFT] =  z  * 32 + zr;
+									checkIfValid(currentSeed);
 
-								}
 							}
-							else if( zr >= 22 ){						
-								// candidate witch hut, is in the bottom right of the 32x32 chunk array
-								// this means that to be in a quad it would be in top left of the quad
-								
-								// check the 32x32 chunk area neighbors to the right and below
-								if(debug) System.out.println("Start in BR @(" + x +"," + z + ")");
-								if ( checkForStructureBL(x+1, z, currentSeed) && 
-									checkForStructureTL(x+1, z+1, currentSeed) && 
-									checkForStructureTR(x, z+1, currentSeed)) {
-										xpos[TOPLEFT] =  x  * 32 + xr;
-										zpos[TOPLEFT] =  z  * 32 + zr;
-										xmon = x;
-										zmon = z;
-										checkIfValid(currentSeed);									
-								}	
-							}
+						}
+						else if( zr >= 22 ){						
+							// candidate witch hut, is in the bottom right of the 32x32 chunk array
+							// this means that to be in a quad it would be in top left of the quad
+							
+							// check the 32x32 chunk area neighbors to the right and below
+							if(debug) System.out.println("Start in BR @(" + x +"," + z + ")");
+							if ( checkForStructureBL(x+1, z, currentSeed) && 
+								checkForStructureTL(x+1, z+1, currentSeed) && 
+								checkForStructureTR(x, z+1, currentSeed)) {
+									xpos[TOPLEFT] =  x  * 32 + xr;
+									zpos[TOPLEFT] =  z  * 32 + zr;
+									xmon = x;
+									zmon = z;
+									checkIfValid(currentSeed);									
+							}	
 						}
 					}
 				}
 			}
 		}
-		System.out.println("Checked: " + count + ", bye!");
+	}
+	
+	public static void main(String[] args) {
+		if (args.length > 0) {
+			System.out.println("Will use " + args[0] + " as seed lite to check");
+			if(debug) System.out.println(args[0]);
+	        Path path = Paths.get(args[0]);
+	        try (Stream<String> lines = Files.lines(path)) {
+	            lines.forEach(s -> checkCoords(Long.parseLong(s)));
+	        } catch (IOException ex) {
+	        	 System.out.println("Error"+ ex);
+	        }
+		} else {
+			System.out.println("Will just do random check");
+			long startSeed = -281474976710658L; 
+			while (startSeed < -281474976710656L || startSeed > 281470000000000L ) {
+				startSeed = rnd.nextLong(); //Long.parseLong(args[0]);	
+			} 
+			if(debug) startSeed = 147915050934441L;
+			System.out.println("Start seed:" + startSeed);
+			long endSeed = 281474976710656L; //higher than 2^48 will be useless
+			long currentSeed;
+			long count = 0;
+
+			for(currentSeed = startSeed; currentSeed <= endSeed; currentSeed++){			
+				count += 1;
+				checkCoords(currentSeed);
+			}
+			System.out.println("Checked: " + count + ", bye!");			
+		}
+
 	}	
 }
